@@ -4,6 +4,7 @@ namespace Hcode\Model;
 
 use \Hcode\DB\Sql;
 use \Hcode\Model;
+use \Hcode\Mailer;
 /**
  *
  */
@@ -122,7 +123,7 @@ class User extends Model
    ));
  }
 
- public function getForgost($email)
+ public static function getForgost($email, $inadmin = true)
  {
    $sql = new Sql();
 
@@ -139,41 +140,55 @@ class User extends Model
          ":iduser"=>$data["iduser"],
          ":desip"=>$_SERVER["REMOTE_ADDR"]
        ));
-   }
-   if (count($resultsrecories) === 0) {
 
-     throw new \Exception("Não foi possivel recuperar a senha");
+       if (count($resultsrecories) === 0) {
 
-   }else{
-     $dataRecovery = $resultsrecories[0];
+         throw new \Exception("Não foi possivel recuperar a senha");
 
-     $code = base64_encode(mcrypt_encrypt(MCRYPT_RIJNDAEL_128, User::SECRET, $dataRecovery["idrecovery"],
-      MCRYPT_MODE_ECB));
+       }else{
+         $dataRecovery = $resultsrecories[0];
 
-     $link = "http://www.hcodecommerce.com.br/admin/forgot/reset?code=$code";
-     $mailer = new Mailer($data["desemail"], $data["desperson"], "Redefinir Senha da Hcode Store", "forgot",
-     array(
-       "name"=>$data["desperson"],
-       "link"=>$link
-     ));
+         $iv = random_bytes(openssl_cipher_iv_length('aes-256-cbc'));
 
-     $mailer->send();
+         $code = openssl_encrypt( $dataRecovery["idrecovery"], 'aes-256-cbc', User::SECRET, 0, $iv );
+         $resultcode = base64_encode($iv.$code);
 
-     return $data;
+         if ($inadmin === true) {
+           $link = "http://www.hcodecommerce.com.br/admin/forgot/reset?code=$resultcode";
+         }else{
+            $link = "http://www.hcodecommerce.com.br/forgot/reset?code=$resultcode";
+         }
 
+
+         $mailer = new Mailer($data["desemail"], $data["desperson"], "Redefinir Senha da Hcode Store", "forgot",
+         array(
+           "name"=>$data["desperson"],
+           "link"=>$link
+         ));
+
+         $mailer->send();
+
+         return $link;
+
+       }
    }
 
  }
 
- public function validForgotDecrypt($code)
+ public static function validForgotDecrypt($resultcode)
  {
-   $idrecovery = mcrypt_decrypt(MCRYPT_RIJNDAEL_128, User::SECRET, base64_decode($code), MCRYPT_MODE_ECB);
+
+   $resultvalid = base64_decode($resultcode);
+
+   $codevalid = mb_substr($resultvalid, openssl_cipher_iv_length('aes-256-cbc'), null, '8bit');
+   $iv = mb_substr($resultvalid, 0, openssl_cipher_iv_length('aes-256-cbc'), '8bit');
+   $idrecovery = openssl_decrypt($codevalid, 'aes-256-cbc', User::SECRET, 0, $iv);
 
    $sql = new Sql();
 
    $results = $sql->select("SELECT * FROM tb_userspasswordsrecoveries a INNER JOIN
    tb_users b USING(iduser) INNER JOIN tb_persons c USING(idperson) WHERE
-   a.idrecovery = :idrecovery AND a.dtrecovery IS NULL AND DATE_ADD(a.dtrecovery, INTERVAL 1 HOUR) >= NOW();", array(
+   a.idrecovery = :idrecovery AND a.dtrecovery IS NULL AND DATE_ADD(a.dtregister, INTERVAL 1 HOUR) >= NOW();", array(
      ":idrecovery"=>$idrecovery
    ));
 
