@@ -6,6 +6,7 @@ use \Slim\Slim;
 use \Hcode\Page;
 use \Hcode\Pageadmim;
 use \Hcode\Model\User;
+use \Hcode\Model\Category;
 $app = new Slim();
 
 $app->config('debug', true);
@@ -183,6 +184,40 @@ $app->get("/admin/forgot/reset", function(){
 
 
 });
+
+$app->get("/admin/categories",function(){
+
+    $categories = Category::listAll();
+    $page = new Pageadmim();
+    $page->setTpl("categories",[
+    'categories'=>$categories
+  ]);
+
+});
+
+$app->get("/admin/categories/create",function(){
+
+
+  $page = new Pageadmim();
+  $page->setTpl("categories-create");
+
+});
+
+$app->post("/admin/categories/create",function(){
+
+  var_dump($_POST);
+  $categores = new Category();
+
+  $categores->setData($_POST);
+
+  $categores->seve();
+
+  header("Location: /admin/categories");
+  exit;
+
+
+});
+
 
 
 $app->run();
