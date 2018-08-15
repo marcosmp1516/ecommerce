@@ -30,6 +30,28 @@ public function save()
     $this->setData($result[0]);
 }
 
+public function get($idcategory)
+{
+  $sql = new Sql();
+
+  $result = $sql->select("SELECT * FROM tb_categories WHERE idcategory = :idcategory",[
+    ':idcategory'=>$idcategory
+  ]);
+
+  $this->setData($result[0]);
+
+}
+
+
+public function delete()
+{
+  $sql = new Sql();
+
+  $sql->query("DELETE FROM tb_categories WHERE idcategory = :idcategory",[
+    'idcategory'=>$this->getidcategory()
+  ]);
+}
+
 
 
 

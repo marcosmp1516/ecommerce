@@ -186,7 +186,7 @@ $app->get("/admin/forgot/reset", function(){
 });
 
 $app->get("/admin/categories",function(){
-
+    User::verifyLongin();
     $categories = Category::listAll();
     $page = new Pageadmim();
     $page->setTpl("categories",[
@@ -197,7 +197,7 @@ $app->get("/admin/categories",function(){
 
 $app->get("/admin/categories/create",function(){
 
-
+  User::verifyLongin();
   $page = new Pageadmim();
   $page->setTpl("categories-create");
 
@@ -205,12 +205,12 @@ $app->get("/admin/categories/create",function(){
 
 $app->post("/admin/categories/create",function(){
 
-  var_dump($_POST);
+  User::verifyLongin();
   $categores = new Category();
 
   $categores->setData($_POST);
 
-  $categores->seve();
+  $categores->save();
 
   header("Location: /admin/categories");
   exit;
@@ -218,7 +218,45 @@ $app->post("/admin/categories/create",function(){
 
 });
 
+$app->get("/admin/categories/:idcategory/delete",function($idcategory){
+  User::verifyLongin();
+  $category = new Category();
+  $category->get((int)$idcategory);
+  $category->delete();
 
+  header("Location: /admin/categories");
+  exit;
+
+});
+
+
+$app->get("/admin/categories/:idcategory",function($idcategory){
+
+  User::verifyLongin();
+  $category = new Category();
+  $category->get((int)$idcategory);
+
+  $page = new Pageadmim();
+  $page->setTpl("categories-update",[
+    'category'=>$category->getValues()
+  ]);
+
+});
+
+$app->post("/admin/categories/:idcategory",function($idcategory){
+
+  User::verifyLongin();
+
+  $category = new Category();
+  $category->get((int)$idcategory);
+
+  $category->setData($_POST);
+  $category->save();
+
+  header("Location: /admin/categories");
+  exit;
+
+});
 
 $app->run();
 //www.hcodecommerce.com.br
