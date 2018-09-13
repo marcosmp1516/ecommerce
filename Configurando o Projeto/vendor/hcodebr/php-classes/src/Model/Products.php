@@ -18,6 +18,18 @@ class Products extends Model
    return $sql->select("SELECT * FROM tb_products  ORDER BY desproduct");
  }
 
+ public static function checkList($list)
+ {
+   foreach ($list as &$row) {
+     $pro = new Products();
+     $pro->setData($row);
+     $row = $pro->getValues();
+   }
+
+   return $list;
+ }
+
+
 public function save()
 {
   $sql = new Sql();
@@ -97,11 +109,11 @@ public function setPhoto($file)
         $image = imagecreatefromjpeg($file["tmp_name"]);
         break;
       case "gif":
-        $image = imagecreatefromjgif($file["tmp_name"]);
+        $image = imagecreatefromgif($file["tmp_name"]);
         break;
-        $image = imagecreatefromjpng($file["tmp_name"]);
-      case "png":
 
+      case "png":
+          $image = imagecreatefrompng($file["tmp_name"]);
         break;
     }
 
