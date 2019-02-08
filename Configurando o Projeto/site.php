@@ -3,6 +3,7 @@ use \Hcode\Page;
 use \Hcode\Pageadmim;
 use \Hcode\Model\Products;
 use \Hcode\Model\Category;
+use \Hcode\Model\Cart;
 
 $app->get('/', function() {
 
@@ -41,6 +42,73 @@ $app->get("/categories/:idcategory", function($idcategory){
   ]);
 
 });
+
+$app->get("/products/:desurl",function($desurl){
+
+  $product = new Products();
+
+  $product->getFromURL($desurl);
+
+  $page = new Page();
+  $page->setTpl("product-detail",[
+    'product'=>$product->getValues(),
+    'categories'=>$product->getCategories()
+  ]);
+
+});
+
+$app->get("/cart",function(){
+
+    $cart = Cart::getFromSession();
+    $page = new Page();
+
+    $page ->setTpl("cart",[
+      'cart'=>$cart->getValues(),
+      'products'=>$cart->getProducts()
+    ]);
+
+
+});
+
+$app->get("/cart/:idproduct/add", function($idproduct){
+
+    $product = new Products();
+
+    $product->get((int)$idproduct);
+
+    $cart = Cart::getFromSession();
+    $cart->addProduct($product);
+
+    header("Location: /cart");
+    exit;
+});
+
+$app->get("/cart/:idproduct/minus", function($idproduct){
+
+    $product = new Products();
+
+    $product->get((int)$idproduct);
+
+    $cart = Cart::getFromSession();
+    $cart->removeProduct($product);
+
+    header("Location: /cart");
+    exit;
+});
+
+$app->get("/cart/:idproduct/remove", function($idproduct){
+
+    $product = new Products();
+
+    $product->get((int)$idproduct);
+
+    $cart = Cart::getFromSession();
+    $cart->addProduct($product, true);
+
+    header("Location: /cart");
+    exit;
+});
+
 /*$app->get("/categories/:idcategory", function($idcategory){
   User::verifyLongin();
   $category = new Category();
