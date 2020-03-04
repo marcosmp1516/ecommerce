@@ -31,6 +31,10 @@ class Cart extends Model
             ];
 
             $user = User::getFromSession();
+            $data['iduser'] = $user->getiduser();
+
+            $cart->setData($data);
+            $cart->save();
           }
         }
 
@@ -102,11 +106,7 @@ class Cart extends Model
     {
       $sql = new Sql();
 
-    /*  var_dump("INSERT INTO tb_cartsproducts (idcart, idproduct) VALUES(:idcart, :idproduct)",[
-        ':idcart'=>$this->getidcart(),
-        ':idproduct'=>$product->getidproduct()
-      ]);
-      exit;*/
+
 
       $sql-> query("INSERT INTO tb_cartsproducts (idcart, idproduct) VALUES(:idcart, :idproduct)",[
         ':idcart'=>$this->getidcart(),
@@ -139,12 +139,12 @@ class Cart extends Model
     {
       $sql = new Sql();
 
-      $rows = $sql->select("SELECT b.idproduct, b.desproduct, b.vlprice, b.vlheight, b.vllength, b.vlweight, b.desurl, COUNT(*) AS nrqtd,
+      $rows = $sql->select("SELECT b.idproduct, b.desproduct, b.vlprice, b.vlwidth, b.vlheight, b.vllength, b.vlweight, b.desurl, COUNT(*) AS nrqtd,
       SUM(b.vlprice) AS vltotal
          FROM tb_cartsproducts a INNER JOIN tb_products b
          ON a.idproduct = b.idproduct WHERE
          a.idcart  = :idcart AND a.dtremoved IS NULL
-        GROUP BY b.idproduct, b.desproduct, b.vlprice, b.vlheight, b.vllength, b.vlweight, b.desurl
+        GROUP BY b.idproduct, b.desproduct, b.vlprice, b.vlwidth, b.vlheight, b.vllength, b.vlweight, b.desurl
         ORDER BY b.desproduct",[
           ':idcart'=>$this->getidcart()
         ]);

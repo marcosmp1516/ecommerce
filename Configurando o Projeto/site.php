@@ -90,7 +90,7 @@ $app->get("/cart/:idproduct/minus", function($idproduct){
     $product->get((int)$idproduct);
 
     $cart = Cart::getFromSession();
-    $cart->removeProduct($product);
+    $cart->remuveProduct($product);
 
     header("Location: /cart");
     exit;
@@ -103,7 +103,7 @@ $app->get("/cart/:idproduct/remove", function($idproduct){
     $product->get((int)$idproduct);
 
     $cart = Cart::getFromSession();
-    $cart->addProduct($product, true);
+    $cart->remuveProduct($product, true);
 
     header("Location: /cart");
     exit;
